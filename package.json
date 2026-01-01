@@ -1,0 +1,39 @@
+{
+  "name": "factrade-fgda",
+  "version": "1.0.0",
+  "description": "FACTRADE FGDA - Autonomous Solana Rewards & Staking Protocol",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "task-orchestrator"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:orchestrator\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:orchestrator": "npm run dev --workspace=task-orchestrator",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "deploy:devnet": "npm run deploy --workspace=solana-program -- --env devnet",
+    "deploy:mainnet": "npm run deploy --workspace=solana-program -- --env mainnet",
+    "solana:build": "cd solana-program && anchor build",
+    "solana:test": "cd solana-program && anchor test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

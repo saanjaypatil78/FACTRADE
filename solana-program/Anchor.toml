@@ -1,0 +1,34 @@
+[toolchain]
+anchor_version = "0.29.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+rewards_program = "rewrDSBhqKMxLkhJRnEKRsJKt7rPt5bBF4VVXsEK6Nx"
+staking_program = "stkePW8VgQF8CxNm6k7q1FKzGvzRgJ7xNJ8jT6ZVXy"
+governance_program = "govnNQF7Z8k9pVwJLzY4XpKj6h1rGE3tqTmE9xKvPp"
+
+[programs.devnet]
+rewards_program = "rewrDSBhqKMxLkhJRnEKRsJKt7rPt5bBF4VVXsEK6Nx"
+staking_program = "stkePW8VgQF8CxNm6k7q1FKzGvzRgJ7xNJ8jT6ZVXy"
+governance_program = "govnNQF7Z8k9pVwJLzY4XpKj6h1rGE3tqTmE9xKvPp"
+
+[programs.mainnet]
+rewards_program = "rewrDSBhqKMxLkhJRnEKRsJKt7rPt5bBF4VVXsEK6Nx"
+staking_program = "stkePW8VgQF8CxNm6k7q1FKzGvzRgJ7xNJ8jT6ZVXy"
+governance_program = "govnNQF7Z8k9pVwJLzY4XpKj6h1rGE3tqTmE9xKvPp"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+
+[test]
+startup_wait = 10000

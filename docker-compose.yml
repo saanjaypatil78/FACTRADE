@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: factrade-postgres
+    environment:
+      POSTGRES_DB: factrade
+      POSTGRES_USER: factrade
+      POSTGRES_PASSWORD: factrade_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factrade"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: factrade-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: factrade-backend
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://factrade:factrade_password@postgres:5432/factrade
+      REDIS_URL: redis://redis:6379
+      SOLANA_NETWORK: devnet
+      SOLANA_RPC_URL: https://api.devnet.solana.com
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  task-orchestrator:
+    build: ./task-orchestrator
+    container_name: factrade-orchestrator
+    environment:
+      NODE_ENV: development
+      ORCHESTRATOR_PORT: 5000
+      RETRY_MAX_ATTEMPTS: 3
+      ESCALATION_THRESHOLD: 5
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./task-orchestrator:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    container_name: factrade-frontend
+    environment:
+      VITE_API_URL: http://localhost:4000/api/v1
+      VITE_SOLANA_NETWORK: devnet
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: factrade-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: factrade-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

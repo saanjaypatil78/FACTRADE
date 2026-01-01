@@ -1,0 +1,118 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, feat-*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-solana:
+    name: Test Solana Programs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          
+      - name: Install Solana
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/v1.16.0/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor --tag v0.29.0 anchor-cli --locked
+          
+      - name: Build programs
+        working-directory: ./solana-program
+        run: anchor build
+        
+      - name: Run tests
+        working-directory: ./solana-program
+        run: anchor test
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+        
+      - name: Run linter
+        working-directory: ./backend
+        run: npm run lint
+        
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+        
+      - name: Run linter
+        working-directory: ./frontend
+        run: npm run lint
+        
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
+
+  test-orchestrator:
+    name: Test Task Orchestrator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        working-directory: ./task-orchestrator
+        run: npm ci
+        
+      - name: Run tests
+        working-directory: ./task-orchestrator
+        run: npm test
+
+  deploy-devnet:
+    name: Deploy to Devnet
+    needs: [test-solana, test-backend, test-frontend, test-orchestrator]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy Solana Programs
+        run: echo "Deploying to Solana Devnet..."
+        
+      - name: Deploy Backend
+        run: echo "Deploying backend to staging..."
+        
+      - name: Deploy Frontend
+        run: echo "Deploying frontend to staging..."

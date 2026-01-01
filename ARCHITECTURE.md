@@ -1,332 +1,572 @@
-# FACTRADE FGDA Architecture
+# FACTRADE RAG System Architecture
 
-## System Overview
+## Overview
 
-FACTRADE FGDA is a production-ready decentralized application built on Solana that provides autonomous rewards, staking, and governance features with intelligent task orchestration.
+The FACTRADE RAG System is designed as a production-ready, modular system with built-in quality assurance, auto-debugging, and auto-updating capabilities. This document provides a detailed overview of the system architecture.
 
-## Architecture Diagram
+## Core Components
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │Dashboard │  │ Staking  │  │Governance│  │Analytics │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                   API Gateway
-                        │
-┌───────────────────────┴─────────────────────────────────────┐
-│                     Backend (Node.js)                        │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
-│  │  Rewards   │  │  Staking   │  │ Governance │           │
-│  │   API      │  │    API     │  │    API     │           │
-│  └────────────┘  └────────────┘  └────────────┘           │
-│         │              │                 │                   │
-│  ┌──────┴──────────────┴─────────────────┴──────┐          │
-│  │         On-Chain Data Indexer                 │          │
-│  └───────────────────┬──────────────────────────┘          │
-└────────────────────────────────────────────────────────────┘
-                        │
-┌───────────────────────┴─────────────────────────────────────┐
-│                  Solana Blockchain                           │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
-│  │  Rewards   │  │  Staking   │  │ Governance │           │
-│  │  Program   │  │  Program   │  │  Program   │           │
-│  └────────────┘  └────────────┘  └────────────┘           │
-└──────────────────────────────────────────────────────────────┘
+### 1. RAG System (`src/rag_system.py`)
 
-┌──────────────────────────────────────────────────────────────┐
-│               Task Orchestrator (Autonomous)                  │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐            │
-│  │   Phase    │  │   Retry    │  │ Escalation │            │
-│  │  Manager   │  │   Engine   │  │  Manager   │            │
-│  └────────────┘  └────────────┘  └────────────┘            │
-└──────────────────────────────────────────────────────────────┘
-```
+The central orchestrator that coordinates all other components.
 
-## Component Details
+**Responsibilities:**
+- Document ingestion and processing
+- Vector storage management
+- Query processing and response generation
+- Coordination of quality checks and debugging
+- Auto-update lifecycle management
 
-### 1. Smart Contracts (Solana Programs)
+**Key Methods:**
+- `add_documents()`: Ingest and process new documents
+- `query()`: Process user queries and generate responses
+- `run_integrity_check()`: Execute comprehensive integrity validation
+- `start_auto_update()`: Enable file monitoring
+- `get_health_status()`: System health monitoring
 
-#### Rewards Program
-- **Purpose**: Autonomous yield calculation and distribution
-- **Key Features**:
-  - Dynamic APY based on TVL
-  - Auto-compounding rewards
-  - Emergency pause mechanism
-  - Governance integration
+**Dependencies:**
+- LangChain for document processing and LLM integration
+- ChromaDB for vector storage
+- OpenAI for embeddings and LLM
 
-#### Staking Program
-- **Purpose**: Token staking with multi-period lock-ups
-- **Key Features**:
-  - 3 lock periods (7, 14, 30 days)
-  - Unbonding mechanism
-  - Reward multipliers
-  - Emergency withdrawal
+### 2. Integrity Checker (`src/integrity_checker.py`)
 
-#### Governance Program
-- **Purpose**: On-chain governance and voting
-- **Key Features**:
-  - Proposal creation
-  - Weighted voting
-  - Quorum requirements
-  - Execution mechanism
+Ensures data integrity throughout the system lifecycle.
 
-### 2. Frontend Application
+**Responsibilities:**
+- Validate embedding quality (dimensions, NaN, infinity)
+- Detect duplicate documents
+- Verify metadata completeness
+- Identify orphaned documents
+- Auto-fix common issues
 
-#### Technology Stack
-- React 18
-- TypeScript
-- Vite
-- TailwindCSS
-- @solana/wallet-adapter
-- Recharts
+**Quality Checks:**
 
-#### Key Features
-- Wallet integration (Phantom, Solflare, Ledger)
-- Real-time data updates
-- Responsive design
-- Dark mode support
-- Error boundary handling
-
-### 3. Backend API
-
-#### Technology Stack
-- Node.js 18+
-- Express
-- TypeScript
-- PostgreSQL
-- Redis
-
-#### Key Features
-- RESTful API
-- On-chain data indexing
-- Rate limiting
-- Request queuing
-- Comprehensive logging
-
-#### API Endpoints
-
-**Rewards**
-- `GET /api/v1/rewards/stats` - Global statistics
-- `GET /api/v1/rewards/user/:wallet` - User rewards
-- `POST /api/v1/rewards/claim` - Claim rewards
-
-**Staking**
-- `GET /api/v1/staking/pools` - Staking pools
-- `POST /api/v1/staking/stake` - Stake tokens
-- `POST /api/v1/staking/unstake` - Unstake tokens
-- `GET /api/v1/staking/positions/:wallet` - User positions
-
-**Governance**
-- `GET /api/v1/governance/proposals` - Active proposals
-- `POST /api/v1/governance/vote` - Cast vote
-
-**Analytics**
-- `GET /api/v1/analytics/overview` - Protocol overview
-- `GET /api/v1/analytics/chart/:metric` - Historical data
-
-### 4. Task Orchestrator
-
-#### Phase Management
-
-**Lifecycle Phases**:
-
-1. **Seeding Phase**
-   - Initial user onboarding
-   - Basic reward distribution
-   - Target: 100 users, 10K TVL
-
-2. **Growth Phase**
-   - Reward acceleration
-   - Referral mechanisms
-   - Target: 1,000 users, 100K TVL
-
-3. **Scaling Phase**
-   - Cross-chain integration
-   - Partnership features
-   - Target: 10,000 users, 1M TVL
-
-4. **Maturity Phase**
-   - Full decentralization
-   - Advanced governance
-   - Self-sustaining protocol
-
-#### Retry Engine
-
-**Retry Strategies**:
-- Exponential Backoff
-- Linear Backoff
-- Immediate Retry
-- Circuit Breaker
-- Alternative Approach
-
-**Configuration**:
-```typescript
-{
-  maxAttempts: 3,
-  baseDelay: 1000ms,
-  maxDelay: 30000ms,
-  jitterFactor: 0.2
-}
+**Embedding Validation:**
+```python
+- Dimension verification (must match config)
+- NaN value detection
+- Infinity value detection
+- Zero magnitude detection
 ```
 
-#### Escalation Manager
-
-**Escalation Levels**:
-1. INFO - Informational events
-2. WARNING - Potential issues
-3. ERROR - Failed operations
-4. CRITICAL - System failures
-5. HUMAN_INTERVENTION - Requires manual action
-
-**Escalation Flow**:
+**Duplicate Detection:**
+```python
+- Hash-based content comparison
+- Document ID tracking
+- Automatic deduplication
 ```
-Task Failure → Retry (3 approaches) → Still Failing? 
-  → Escalate to WARNING → Continue Failing?
-  → Escalate to ERROR → Persistent Failures?
-  → Escalate to CRITICAL → Beyond Threshold?
-  → HUMAN_INTERVENTION Required
+
+**Metadata Verification:**
+```python
+- Required field validation (source, created_at)
+- Source path validation
+- Metadata completeness checks
 ```
+
+**Orphan Detection:**
+```python
+- Cross-reference vector store vs document list
+- Identify documents in store but not in list
+- Identify documents in list but not in store
+```
+
+### 3. Quality Checker (`src/quality_checker.py`)
+
+Validates the quality of retrieval and response generation.
+
+**Responsibilities:**
+- Retrieval quality assessment
+- Response quality validation
+- Performance monitoring
+- Hallucination detection
+
+**Quality Dimensions:**
+
+**Retrieval Quality:**
+```python
+- Similarity score validation
+- Retrieval time monitoring
+- Relevance threshold enforcement
+- Term overlap analysis
+```
+
+**Response Quality:**
+```python
+- Length validation (min/max bounds)
+- Hallucination detection (grounding in sources)
+- Source verification
+- Coherence analysis
+- Toxicity checking
+```
+
+**Performance Metrics:**
+```python
+- Query time (end-to-end)
+- Embedding generation time
+- Memory usage
+- Throughput
+```
+
+### 4. Auto-Debugger (`src/auto_debugger.py`)
+
+Provides self-healing and monitoring capabilities.
+
+**Responsibilities:**
+- Error handling and recovery
+- Performance profiling
+- Health monitoring
+- Memory leak detection
+- Self-healing operations
+
+**Features:**
+
+**Circuit Breaker:**
+```python
+class CircuitBreaker:
+    - Tracks failure rates
+    - Opens circuit after threshold
+    - Half-open state for recovery
+    - Automatic circuit closing
+```
+
+**Retry Mechanism:**
+```python
+- Exponential backoff
+- Configurable max attempts
+- Error logging
+- Failure tracking
+```
+
+**Health Monitoring:**
+```python
+- CPU usage tracking
+- Memory monitoring
+- Disk space checking
+- Error rate analysis
+```
+
+**Performance Profiling:**
+```python
+- Operation timing
+- Memory delta tracking
+- Metric aggregation
+- Percentile calculations
+```
+
+### 5. Auto-Updater (`src/auto_updater.py`)
+
+Manages automatic document updates and versioning.
+
+**Responsibilities:**
+- File system monitoring
+- Incremental document updates
+- Version management
+- Scheduled reindexing
+
+**Features:**
+
+**File Monitoring:**
+```python
+class DocumentChangeHandler:
+    - Real-time file system events
+    - Created/Modified/Deleted detection
+    - Batch change processing
+    - Debounce logic
+```
+
+**Update Strategy:**
+```python
+- Hash-based change detection
+- Incremental updates
+- Batch processing
+- Full reindexing support
+```
+
+**Versioning:**
+```python
+- Automatic snapshots
+- Version history tracking
+- Rollback capability
+- Configurable retention
+```
+
+### 6. Configuration Manager (`src/config_manager.py`)
+
+Centralized configuration management with validation.
+
+**Responsibilities:**
+- Configuration loading and validation
+- Environment setup
+- Configuration reloading
+- Default value management
+
+**Configuration Structure:**
+```python
+Config (Pydantic Model)
+├── System
+├── VectorStore
+├── Embeddings
+├── LLM
+├── DocumentProcessing
+├── Retrieval
+├── QualityChecks
+│   ├── Integrity
+│   ├── Retrieval
+│   ├── Response
+│   └── Performance
+├── AutoDebugger
+│   ├── ErrorHandling
+│   ├── Monitoring
+│   ├── Logging
+│   └── SelfHealing
+└── AutoUpdate
+    ├── SourceMonitoring
+    ├── UpdateStrategy
+    └── Versioning
+```
+
+### 7. Logger (`src/logger.py`)
+
+Structured logging system with multiple outputs.
+
+**Features:**
+- Structured JSON logging
+- Multiple log levels
+- Rotating file handlers
+- Separate error logs
+- Console output
 
 ## Data Flow
 
-### Staking Flow
+### Document Ingestion Flow
 
 ```
-1. User connects wallet (Frontend)
-2. User selects staking pool and amount (Frontend)
-3. Transaction sent to Solana (Wallet Adapter)
-4. Staking Program processes transaction (On-chain)
-5. Event emitted (On-chain)
-6. Backend indexes event (Data Indexer)
-7. UI updates with new position (Frontend)
+1. User adds documents
+   │
+   ↓
+2. RAGSystem.add_documents()
+   │
+   ├─→ Load document (PDF, DOCX, etc.)
+   │
+   ├─→ Split into chunks (RecursiveCharacterTextSplitter)
+   │
+   ├─→ Generate embeddings (OpenAI)
+   │
+   ├─→ Store in vector DB (ChromaDB)
+   │
+   └─→ Update document index
 ```
 
-### Rewards Claim Flow
+### Query Processing Flow
 
 ```
-1. User requests reward claim (Frontend)
-2. Calculate pending rewards (Backend API)
-3. Submit claim transaction (Wallet Adapter)
-4. Rewards Program transfers tokens (On-chain)
-5. Event emitted (On-chain)
-6. Backend updates user balance (Data Indexer)
-7. UI reflects claimed rewards (Frontend)
+1. User submits query
+   │
+   ↓
+2. Track query pattern (Auto-Debugger)
+   │
+   ↓
+3. Generate query embedding
+   │
+   ↓
+4. Retrieve similar documents
+   │   ├─→ Check retrieval quality
+   │   └─→ Monitor retrieval time
+   │
+   ↓
+5. Generate response (LLM)
+   │   ├─→ Check response quality
+   │   ├─→ Detect hallucination
+   │   └─→ Verify sources
+   │
+   ↓
+6. Check performance metrics
+   │
+   ↓
+7. Return result with metrics
 ```
 
-### Governance Vote Flow
+### Auto-Update Flow
 
 ```
-1. User views active proposals (Frontend)
-2. User casts vote (Frontend)
-3. Transaction sent to Solana (Wallet Adapter)
-4. Governance Program records vote (On-chain)
-5. Vote weight calculated based on holdings (On-chain)
-6. Event emitted (On-chain)
-7. Backend updates proposal stats (Data Indexer)
-8. UI shows updated vote counts (Frontend)
+1. File system event detected
+   │
+   ↓
+2. Event handler accumulates changes
+   │
+   ↓
+3. After debounce period
+   │
+   ↓
+4. Process changes
+   │
+   ├─→ Created files: Add to system
+   │
+   ├─→ Modified files: Update in system
+   │    ├─→ Calculate file hash
+   │    ├─→ Compare with index
+   │    └─→ Update if changed
+   │
+   └─→ Deleted files: Remove from system
+   │
+   ↓
+5. Create version snapshot
+   │
+   ↓
+6. Update document index
 ```
 
-## Security Architecture
+### Integrity Check Flow
 
-### Smart Contract Security
-- Ownership controls via PDAs
-- Signer validation on all instructions
-- Arithmetic overflow protection
-- Emergency pause mechanisms
-- Time-based constraints for critical operations
+```
+1. Trigger integrity check
+   │
+   ↓
+2. Validate embeddings
+   │   ├─→ Check dimensions
+   │   ├─→ Detect NaN/Inf
+   │   └─→ Verify magnitude
+   │
+   ↓
+3. Check for duplicates
+   │   ├─→ Hash content
+   │   └─→ Identify duplicates
+   │
+   ↓
+4. Verify metadata
+   │   ├─→ Check required fields
+   │   └─→ Validate values
+   │
+   ↓
+5. Detect orphaned documents
+   │   ├─→ Compare store vs index
+   │   └─→ Identify mismatches
+   │
+   ↓
+6. Auto-fix issues (if enabled)
+   │   ├─→ Remove duplicates
+   │   └─→ Clean orphans
+   │
+   ↓
+7. Return results
+```
 
-### API Security
-- Rate limiting (100 requests/15 min per IP)
-- Helmet.js security headers
-- CORS configuration
-- Input validation
-- SQL injection prevention
-- XSS protection
+## Error Handling Strategy
 
-### Infrastructure Security
-- HTTPS/TLS encryption
-- Environment variable encryption
-- Database connection encryption
-- Multi-sig wallet for program upgrades
-- Regular security audits
+### Layered Error Handling
 
-## Monitoring & Observability
+```
+Level 1: Retry with Exponential Backoff
+├─→ Transient errors (network, timeout)
+├─→ Max 3 attempts
+└─→ Backoff: 2^attempt seconds
 
-### Metrics Collection
-- Prometheus for metrics aggregation
-- Custom metrics from all services
-- Real-time dashboards via Grafana
+Level 2: Circuit Breaker
+├─→ Persistent failures
+├─→ Opens after 5 failures
+└─→ 60 second timeout
 
-### Key Metrics
-- API response times
-- Transaction success rates
-- Error rates
-- Active users
-- Total value locked
-- Reward distribution rates
-- Task completion rates
-- Escalation events
+Level 3: Self-Healing
+├─→ Memory errors → garbage collection
+├─→ Connection errors → wait and retry
+└─→ Cache errors → invalidate cache
 
-### Logging
-- Structured logging with Winston
-- Log levels: DEBUG, INFO, WARN, ERROR
-- Centralized log aggregation
-- Log retention: 30 days
+Level 4: Graceful Degradation
+├─→ Disable non-critical features
+└─→ Return partial results
+```
 
-### Alerting
-- PagerDuty integration
-- Slack notifications
-- Email alerts for critical events
-- SMS for emergency escalations
+## Performance Optimization
+
+### Caching Strategy
+
+```
+Embedding Cache
+├─→ Cache embeddings by content hash
+├─→ TTL: 1 hour
+├─→ Max size: 512 MB
+└─→ Invalidation on document update
+
+Vector Store Persistence
+├─→ Disk-backed storage
+├─→ Lazy loading
+└─→ Periodic optimization
+```
+
+### Batch Processing
+
+```
+Document Processing
+├─→ Batch size: 50 documents
+├─→ Parallel embedding generation
+└─→ Bulk vector store insertion
+
+Query Processing
+├─→ Top-K retrieval (default: 5)
+├─→ Reranking enabled
+└─→ Hybrid search (semantic + keyword)
+```
 
 ## Scalability Considerations
 
 ### Horizontal Scaling
-- Stateless backend services
-- Load balancer distribution
-- Redis for session management
-- Database read replicas
+
+- API server can be replicated
+- Load balancer distributes requests
+- Shared vector store backend
+- Centralized logging and metrics
 
 ### Vertical Scaling
-- Optimized database queries
-- Connection pooling
-- Caching strategies
-- CDN for frontend assets
 
-### Performance Optimization
-- API response caching (Redis)
-- Database query optimization
-- Lazy loading in frontend
-- Code splitting
-- Image optimization
+- Adjustable chunk size
+- Configurable batch sizes
+- Memory limits
+- Resource pooling
 
-## Disaster Recovery
+## Security Considerations
 
-### Backup Strategy
-- Database backups: Every 6 hours
-- Configuration backups: Daily
-- On-chain data: Permanent (blockchain)
-- Backup retention: 30 days
+### API Security
 
-### Recovery Procedures
-- RTO (Recovery Time Objective): < 1 hour
-- RPO (Recovery Point Objective): < 6 hours
-- Automated failover for critical services
-- Manual failover procedures documented
+- CORS configuration
+- Rate limiting (60 req/min)
+- Input validation
+- Authentication support (configurable)
 
-## Compliance & Regulations
+### Data Security
 
-### Data Privacy
-- GDPR compliance
-- User data encryption
-- Right to be forgotten
-- Data portability
+- Encryption at rest (vector store)
+- Secure API key management
+- Audit logging
+- Access control
 
-### Financial Compliance
-- KYC/AML considerations
-- Transaction monitoring
-- Suspicious activity reporting
-- Regulatory reporting capabilities
+## Monitoring and Observability
+
+### Metrics Collection
+
+```
+System Metrics
+├─→ CPU usage
+├─→ Memory usage
+├─→ Disk usage
+└─→ Error rates
+
+Application Metrics
+├─→ Query latency
+├─→ Retrieval time
+├─→ Embedding time
+├─→ Document count
+└─→ Quality check results
+
+Business Metrics
+├─→ Query patterns
+├─→ User satisfaction (implicit)
+└─→ System uptime
+```
+
+### Log Aggregation
+
+```
+Structured Logs
+├─→ Timestamp
+├─→ Log level
+├─→ Operation
+├─→ Context
+└─→ Metrics
+
+Log Destinations
+├─→ Console (development)
+├─→ File (production)
+└─→ External aggregator (optional)
+```
+
+## Deployment Architecture
+
+### Development
+
+```
+┌─────────────┐
+│  Developer  │
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│  RAG System │
+│   (CLI)     │
+└─────────────┘
+```
+
+### Production
+
+```
+┌──────────┐
+│  Client  │
+└────┬─────┘
+     │
+     ↓
+┌────────────┐
+│    API     │
+│  Gateway   │
+└─────┬──────┘
+      │
+      ↓
+┌─────────────────┐
+│  Load Balancer  │
+└────┬───────┬────┘
+     │       │
+     ↓       ↓
+┌─────┐   ┌─────┐
+│ API │   │ API │
+│  1  │   │  2  │
+└──┬──┘   └──┬──┘
+   │         │
+   └────┬────┘
+        │
+        ↓
+┌───────────────┐
+│  Vector Store │
+│   (ChromaDB)  │
+└───────────────┘
+```
+
+## Extension Points
+
+### Custom Document Loaders
+
+```python
+from langchain.document_loaders.base import BaseLoader
+
+class CustomLoader(BaseLoader):
+    def load(self):
+        # Custom loading logic
+        pass
+```
+
+### Custom Quality Checks
+
+```python
+class CustomQualityChecker:
+    def check_custom_metric(self, data):
+        # Custom validation logic
+        pass
+```
+
+### Custom Embeddings
+
+```python
+from langchain.embeddings.base import Embeddings
+
+class CustomEmbeddings(Embeddings):
+    def embed_documents(self, texts):
+        # Custom embedding logic
+        pass
+```
+
+## Future Enhancements
+
+1. **Multi-tenancy**: Support for multiple isolated RAG instances
+2. **Advanced Reranking**: Cross-encoder based reranking
+3. **Hybrid Search**: BM25 + Semantic search
+4. **Streaming Responses**: Server-sent events for real-time responses
+5. **Analytics Dashboard**: Real-time metrics visualization
+6. **Plugin System**: Extensible architecture for custom components

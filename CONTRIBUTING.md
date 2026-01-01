@@ -1,248 +1,278 @@
-# Contributing to FACTRADE FGDA
+# Contributing to FACTRADE RAG System
 
-Thank you for your interest in contributing to FACTRADE FGDA! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the FACTRADE RAG System! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
 - Be respectful and inclusive
 - Provide constructive feedback
-- Focus on the best outcome for the community
+- Focus on what is best for the community
+- Show empathy towards other community members
 
-## Development Setup
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- Rust 1.70+
-- Solana CLI 1.16+
-- Anchor 0.29+
-- Docker & Docker Compose
+- Python 3.9 or higher
 - Git
+- Basic understanding of RAG systems
+- Familiarity with LangChain and vector databases
 
-### Local Setup
+### Development Setup
+
+1. Fork the repository
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/your-username/FACTRADE.git
+   cd FACTRADE
+   ```
+
+3. Create a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+6. Run tests to verify setup:
+   ```bash
+   pytest
+   ```
+
+## Development Workflow
+
+### Creating a Feature Branch
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd factrade-fgda
-
-# Install dependencies
-npm install
-
-# Set up environment
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start local development
-npm run dev
-```
-
-## Contribution Workflow
-
-### 1. Fork & Clone
-
-```bash
-# Fork the repository on GitHub
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/factrade-fgda.git
-cd factrade-fgda
-
-# Add upstream remote
-git remote add upstream https://github.com/factrade/factrade-fgda.git
-```
-
-### 2. Create Branch
-
-```bash
-# Create feature branch
 git checkout -b feature/your-feature-name
-
-# Or bug fix branch
-git checkout -b fix/bug-description
 ```
 
-### 3. Make Changes
+Branch naming conventions:
+- `feature/` - New features
+- `bugfix/` - Bug fixes
+- `docs/` - Documentation updates
+- `refactor/` - Code refactoring
+- `test/` - Test additions or modifications
 
-- Write clean, documented code
-- Follow existing code style
-- Add tests for new features
-- Update documentation as needed
+### Making Changes
 
-### 4. Test Changes
+1. Write your code following the style guide
+2. Add tests for new functionality
+3. Update documentation as needed
+4. Ensure all tests pass
+5. Commit your changes with clear messages
+
+### Commit Messages
+
+Follow the conventional commits format:
+
+```
+type(scope): subject
+
+body
+
+footer
+```
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `test`: Test additions or modifications
+- `chore`: Maintenance tasks
+
+Example:
+```
+feat(quality-checker): add advanced hallucination detection
+
+Implemented NLI-based hallucination detection using cross-encoder
+models for improved accuracy in detecting unfaithful responses.
+
+Closes #123
+```
+
+### Code Style
+
+- Follow PEP 8 guidelines
+- Use type hints for function parameters and returns
+- Write docstrings for classes and functions
+- Keep functions focused and concise
+- Use meaningful variable names
+
+Example:
+```python
+def check_retrieval_quality(
+    self,
+    query: str,
+    retrieved_docs: List[Dict[str, Any]],
+    retrieval_time_ms: float
+) -> Dict[str, Any]:
+    """
+    Check the quality of retrieved documents.
+    
+    Args:
+        query: The user's query
+        retrieved_docs: List of retrieved documents
+        retrieval_time_ms: Time taken for retrieval
+        
+    Returns:
+        Dictionary containing quality check results
+    """
+    # Implementation
+    pass
+```
+
+### Testing
+
+#### Writing Tests
+
+- Write tests for all new functionality
+- Follow the AAA pattern (Arrange, Act, Assert)
+- Use descriptive test names
+- Mock external dependencies
+- Test edge cases and error conditions
+
+Example:
+```python
+def test_check_retrieval_quality_with_valid_data():
+    # Arrange
+    quality_checker = QualityChecker(config)
+    query = "What is machine learning?"
+    retrieved_docs = [{"content": "ML is...", "score": 0.9}]
+    
+    # Act
+    result = quality_checker.check_retrieval_quality(
+        query, retrieved_docs, 100
+    )
+    
+    # Assert
+    assert result['passed'] is True
+    assert 'checks' in result
+```
+
+#### Running Tests
 
 ```bash
 # Run all tests
-npm run test
+pytest
 
-# Run linter
-npm run lint
+# Run specific test file
+pytest tests/test_quality_checker.py
 
-# Run type checking
-npm run build
+# Run with coverage
+pytest --cov=src tests/
+
+# Run only unit tests
+pytest -m unit
 ```
 
-### 5. Commit Changes
+### Documentation
 
-```bash
-# Stage changes
-git add .
+- Update README.md for user-facing changes
+- Update ARCHITECTURE.md for architectural changes
+- Add docstrings to all public functions and classes
+- Include examples in docstrings
+- Keep documentation up to date with code changes
 
-# Commit with descriptive message
-git commit -m "feat: add new staking feature"
+## Pull Request Process
+
+### Before Submitting
+
+1. Ensure all tests pass
+2. Update documentation
+3. Add tests for new features
+4. Follow the code style guide
+5. Rebase on the latest main branch
+
+### Submitting a Pull Request
+
+1. Push your branch to your fork
+2. Create a pull request from your branch to `main`
+3. Fill out the pull request template
+4. Link related issues
+5. Request review from maintainers
+
+### Pull Request Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] All tests pass
+- [ ] New tests added
+- [ ] Manual testing completed
+
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] No new warnings
 ```
 
-**Commit Message Format**:
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `style:` Code style changes
-- `refactor:` Code refactoring
-- `test:` Test additions/changes
-- `chore:` Build/tooling changes
+### Review Process
 
-### 6. Push & Create PR
+- Maintainers will review your PR
+- Address feedback and comments
+- Make requested changes
+- Update PR with additional commits
+- Once approved, PR will be merged
 
-```bash
-# Push to your fork
-git push origin feature/your-feature-name
+## Areas for Contribution
 
-# Create Pull Request on GitHub
-```
+### High Priority
 
-## Code Style Guidelines
+- Additional embedding providers (Cohere, Anthropic)
+- Advanced hallucination detection
+- Multi-modal support (images, tables)
+- Distributed vector store support
+- Performance optimizations
 
-### TypeScript/JavaScript
+### Medium Priority
 
-```typescript
-// Use TypeScript for type safety
-interface User {
-  wallet: string;
-  balance: number;
-}
+- Additional document loaders
+- Custom reranking strategies
+- Advanced analytics dashboard
+- Plugin system
+- Integration tests
 
-// Use async/await over promises
-async function fetchUser(wallet: string): Promise<User> {
-  const response = await api.get(`/users/${wallet}`);
-  return response.data;
-}
+### Low Priority
 
-// Use meaningful variable names
-const userBalance = await fetchBalance(wallet);
+- UI improvements
+- Additional examples
+- Documentation enhancements
+- Code cleanup
 
-// Add comments for complex logic
-// Calculate rewards based on staking duration and APY
-const rewards = calculateRewards(amount, duration, apy);
-```
+## Getting Help
 
-### Rust
-
-```rust
-// Use idiomatic Rust patterns
-use anchor_lang::prelude::*;
-
-// Document public functions
-/// Initializes the rewards pool with given parameters
-pub fn initialize_rewards_pool(
-    ctx: Context<InitializeRewardsPool>,
-    base_apy: u64,
-) -> Result<()> {
-    // Implementation
-    Ok(())
-}
-
-// Use descriptive error messages
-#[error_code]
-pub enum ErrorCode {
-    #[msg("Rewards pool is paused")]
-    PoolPaused,
-}
-```
-
-## Testing Guidelines
-
-### Unit Tests
-
-```typescript
-describe('RewardsCalculator', () => {
-  it('should calculate rewards correctly', () => {
-    const rewards = calculateRewards(1000, 365, 12);
-    expect(rewards).toBe(120);
-  });
-
-  it('should handle edge cases', () => {
-    expect(calculateRewards(0, 365, 12)).toBe(0);
-    expect(calculateRewards(1000, 0, 12)).toBe(0);
-  });
-});
-```
-
-### Integration Tests
-
-```typescript
-describe('Staking API', () => {
-  it('should stake tokens successfully', async () => {
-    const response = await request(app)
-      .post('/api/v1/staking/stake')
-      .send({ wallet, poolId, amount: 1000 });
-    
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-  });
-});
-```
-
-## Documentation
-
-### Code Documentation
-
-- Add JSDoc comments for functions
-- Document complex algorithms
-- Include usage examples
-- Update README.md if adding new features
-
-### API Documentation
-
-- Document all endpoints
-- Include request/response examples
-- Specify error codes
-- Note authentication requirements
-
-## Review Process
-
-### What We Look For
-
-- Code quality and style
-- Test coverage
-- Documentation completeness
-- Performance considerations
-- Security implications
-
-### Review Timeline
-
-- Initial review: Within 2 business days
-- Follow-up reviews: Within 1 business day
-- Merge decision: After all checks pass
-
-## Community
-
-### Communication Channels
-
-- GitHub Issues: Bug reports and feature requests
-- Discord: Real-time discussion
-- Twitter: Announcements and updates
-
-### Getting Help
-
+- Create an issue for bugs or feature requests
+- Tag maintainers for urgent issues
+- Join community discussions
 - Check existing documentation
-- Search closed issues
-- Ask in Discord #dev channel
-- Create detailed GitHub issue
 
 ## Recognition
 
 Contributors will be:
-- Listed in CONTRIBUTORS.md
+- Added to CONTRIBUTORS.md
 - Mentioned in release notes
-- Eligible for community rewards
+- Acknowledged in documentation
 
-Thank you for contributing to FACTRADE FGDA! 🚀
+Thank you for contributing!

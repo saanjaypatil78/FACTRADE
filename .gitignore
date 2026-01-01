@@ -1,24 +1,30 @@
-# Dependencies
-node_modules/
-target/
-.pnp
-.pnp.js
-
-# Testing
-coverage/
-*.log
-.nyc_output
-
-# Production
-dist/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 build/
-*.local
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Environment
-.env
-.env.local
-.env.production
-.env.*.local
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
 
 # IDE
 .vscode/
@@ -27,34 +33,36 @@ build/
 *.swo
 *~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Solana
-test-ledger/
-*.so
-*.keypair
-!deploy.keypair
-
-# Build artifacts
-*.anchor
-.anchor/
-
-# Cache
-.turbo/
-.cache/
-.parcel-cache/
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
 
 # Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+logs/
+*.log.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+
+# Vector DB Data
+data/vector_store/
+data/cache/
+data/embeddings/
 
 # Temporary files
 tmp/
 temp/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

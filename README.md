@@ -1,284 +1,491 @@
-# FACTRADE FGDA
+# FACTRADE RAG System
 
-**Autonomous Solana Rewards Protocol with Staking and Lifecycle Management**
+A production-ready, auto-updating Retrieval-Augmented Generation (RAG) system with built-in quality checks, auto-debugging capabilities, and integrity validation.
 
-## 🚀 Overview
+## Features
 
-FACTRADE FGDA is a production-ready decentralized application (dApp) built on Solana that provides:
+### Core RAG Capabilities
+- **Document Processing**: Support for PDF, DOCX, TXT, MD, and HTML files
+- **Vector Storage**: ChromaDB-based vector storage with persistence
+- **Embeddings**: OpenAI embeddings with caching
+- **LLM Integration**: OpenAI GPT-4 for response generation
+- **Semantic Search**: Hybrid search combining semantic and keyword matching
+- **Context-Aware Responses**: Source citation and context tracking
 
-- **Autonomous Rewards Protocol**: Auto-yield tokenomics with dynamic APY
-- **Token Staking**: Multi-period staking vaults (7, 14, 30 days) with unbonding
-- **Lifecycle Management**: Phase-based progression (Seeding → Growth → Scaling → Maturity)
-- **Task Orchestration**: Self-healing retry system with intelligent escalation
-- **Real-time Dashboard**: Live metrics for rewards, TVL, and performance
+### Auto-Update System
+- **File Monitoring**: Real-time detection of document changes using watchdog
+- **Incremental Updates**: Efficient batch processing of document updates
+- **Version Control**: Automatic versioning with rollback capabilities
+- **Scheduled Reindexing**: Configurable cron-based full reindexing
+- **Change Detection**: Hash-based duplicate detection and modification tracking
 
-## 📋 Architecture
+### Quality Check System
+- **Data Integrity Checks**:
+  - Embedding validation (dimension, NaN, infinity checks)
+  - Duplicate document detection
+  - Metadata verification
+  - Orphaned document detection
+  
+- **Retrieval Quality Checks**:
+  - Similarity score validation
+  - Retrieval time monitoring
+  - Relevance threshold enforcement
+  
+- **Response Quality Checks**:
+  - Hallucination detection
+  - Source verification
+  - Coherence analysis
+  - Toxicity checking
+  - Response length validation
+  
+- **Performance Benchmarks**:
+  - Query time tracking
+  - Memory usage monitoring
+  - Embedding generation time
+  - Uptime tracking
 
-### Smart Contracts (Solana Programs)
-- **Rewards Protocol** (`rewards_program`): Autonomous yield calculation and compounding
-- **Staking Vault** (`staking_program`): Lock-up periods with unbonding mechanics
-- **Governance Token** (`governance_program`): On-chain voting and parameter control
+### Auto-Debugger
+- **Error Handling**:
+  - Automatic retry with exponential backoff
+  - Circuit breaker pattern for fault isolation
+  - Comprehensive error logging and tracking
+  
+- **Monitoring**:
+  - Real-time health checks
+  - Performance profiling
+  - Memory leak detection
+  - Query pattern analysis
+  
+- **Self-Healing**:
+  - Automatic recovery from failures
+  - Cache invalidation
+  - Index optimization
+  - Orphaned process cleanup
 
-### Frontend (React + TypeScript)
-- Wallet integration (Phantom, Solflare, Ledger)
-- Real-time dashboard with auto-updating metrics
-- Staking interface with period selection
-- Transaction history and analytics
-- Responsive design with dark mode
-
-### Backend (Node.js + Express)
-- On-chain data indexing and aggregation
-- Task tracking and workflow management
-- Analytics and reporting endpoints
-- Rate limiting and monitoring
-
-### Task Orchestration
-- Autonomous phase transitions
-- Multi-approach retry strategies
-- Automatic escalation system
-- Detailed logging and debugging
-
-## 🛠 Tech Stack
-
-- **Blockchain**: Solana (Anchor Framework)
-- **Frontend**: React, TypeScript, Vite, TailwindCSS
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: PostgreSQL (indexing) + Redis (caching)
-- **Testing**: Jest, Playwright, Anchor Tests
-- **Monitoring**: Prometheus, Grafana
-- **CI/CD**: GitHub Actions
-
-## 📦 Installation
+## Installation
 
 ### Prerequisites
-- Node.js 18+
-- Rust 1.70+
-- Solana CLI 1.16+
-- Anchor 0.29+
-- Docker & Docker Compose
+- Python 3.9 or higher
+- OpenAI API key
 
-### Quick Start
+### Setup
 
+1. Clone the repository:
 ```bash
-# Clone repository
 git clone <repository-url>
-cd factrade-fgda
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Build Solana programs
-npm run solana:build
-
-# Run tests
-npm run solana:test
-npm run test
-
-# Start development servers
-npm run dev
+cd FACTRADE
 ```
 
-## 🚢 Deployment
-
-### Devnet Deployment
+2. Create a virtual environment:
 ```bash
-# Deploy to Solana Devnet
-npm run deploy:devnet
-
-# Verify deployment
-solana program show <PROGRAM_ID> --url devnet
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### Mainnet Deployment
+3. Install dependencies:
 ```bash
-# Deploy to Solana Mainnet (requires SOL for fees)
-npm run deploy:mainnet
-
-# Verify deployment
-solana program show <PROGRAM_ID> --url mainnet-beta
+pip install -r requirements.txt
 ```
 
-## 📊 Monitoring & Operations
+4. Set up environment variables:
+```bash
+export OPENAI_API_KEY="your-api-key-here"
+```
+
+5. Configure the system (optional):
+Edit `config.yaml` to customize settings.
+
+## Usage
+
+### API Server Mode
+
+Start the REST API server:
+```bash
+python main.py --mode api
+```
+
+The API will be available at `http://localhost:8000`
+
+#### API Endpoints
+
+**Query the System**
+```bash
+POST /query
+{
+  "question": "What is machine learning?"
+}
+```
+
+**Add Documents**
+```bash
+POST /documents/add
+{
+  "file_paths": ["./data/documents/doc1.pdf", "./data/documents/doc2.txt"]
+}
+```
+
+**Delete Document**
+```bash
+DELETE /documents/source/{source_path}
+```
+
+**Health Check**
+```bash
+GET /health
+```
+
+**Statistics**
+```bash
+GET /statistics
+```
+
+**Integrity Check**
+```bash
+GET /integrity-check
+```
+
+**Performance Summary**
+```bash
+GET /performance-summary?operation=query
+```
+
+**Error Summary**
+```bash
+GET /error-summary?last_n_minutes=60
+```
+
+**Query Patterns**
+```bash
+GET /query-patterns
+```
+
+**Memory Leak Check**
+```bash
+GET /memory-leak-check
+```
+
+**Force Reindex**
+```bash
+POST /reindex
+```
+
+### CLI Mode
+
+**Interactive Mode**
+```bash
+python main.py --mode cli
+```
+
+**Add Documents**
+```bash
+python main.py --mode cli --add-documents ./data/documents/doc1.pdf ./data/documents/doc2.txt
+```
+
+**Query**
+```bash
+python main.py --mode cli --query "What is the main topic of the documents?"
+```
+
+**Integrity Check**
+```bash
+python main.py --mode cli --integrity-check
+```
+
+**Force Reindex**
+```bash
+python main.py --mode cli --reindex
+```
+
+### Python API
+
+```python
+from src.rag_system import RAGSystem
+
+# Initialize the system
+rag = RAGSystem()
+
+# Add documents
+rag.add_documents(["./data/documents/doc1.pdf"])
+
+# Query
+result = rag.query("What is machine learning?")
+print(result["answer"])
+
+# Start auto-update monitoring
+rag.start_auto_update()
+
+# Run integrity check
+integrity_results = rag.run_integrity_check()
+
+# Get health status
+health = rag.get_health_status()
+
+# Get performance metrics
+performance = rag.get_performance_summary()
+
+# Stop auto-update
+rag.stop_auto_update()
+```
+
+## Configuration
+
+The system is configured via `config.yaml`. Key configuration sections:
+
+### System Configuration
+```yaml
+system:
+  name: "FACTRADE RAG System"
+  version: "1.0.0"
+  environment: "development"
+```
+
+### Vector Store Configuration
+```yaml
+vector_store:
+  type: "chromadb"
+  persist_directory: "./data/vector_store"
+  collection_name: "factrade_knowledge"
+  distance_metric: "cosine"
+```
+
+### Embeddings Configuration
+```yaml
+embeddings:
+  provider: "openai"
+  model: "text-embedding-3-small"
+  dimension: 1536
+  batch_size: 100
+  cache_enabled: true
+```
+
+### Quality Checks Configuration
+```yaml
+quality_checks:
+  enabled: true
+  integrity:
+    validate_embeddings: true
+    check_duplicates: true
+    verify_metadata: true
+  retrieval:
+    min_similarity_score: 0.6
+    max_retrieval_time_ms: 500
+  response:
+    check_hallucination: true
+    verify_sources: true
+    toxicity_check: true
+```
+
+### Auto-Debugger Configuration
+```yaml
+auto_debugger:
+  enabled: true
+  error_handling:
+    auto_recovery: true
+    max_retry_attempts: 3
+  monitoring:
+    health_check_interval_seconds: 60
+    performance_profiling: true
+    memory_leak_detection: true
+  self_healing:
+    enabled: true
+    auto_optimize_indices: true
+```
+
+### Auto-Update Configuration
+```yaml
+auto_update:
+  enabled: true
+  monitoring:
+    watch_directories: ["./data/documents"]
+    watch_interval_seconds: 300
+  strategy:
+    incremental_updates: true
+    batch_size: 50
+    update_schedule: "0 2 * * *"
+  versioning:
+    enabled: true
+    max_versions: 10
+```
+
+## Architecture
+
+### Component Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        RAG System                           │
+├─────────────────────────────────────────────────────────────┤
+│  ┌───────────────┐  ┌──────────────┐  ┌─────────────────┐ │
+│  │   Document    │  │   Vector     │  │   LLM/          │ │
+│  │   Processor   │─▶│   Store      │─▶│   Retriever     │ │
+│  └───────────────┘  └──────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                            ▲
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+┌───────▼────────┐  ┌───────▼───────┐  ┌───────▼────────┐
+│   Integrity    │  │    Quality    │  │  Auto-Debugger │
+│    Checker     │  │    Checker    │  │                │
+├────────────────┤  ├───────────────┤  ├────────────────┤
+│ • Embedding    │  │ • Retrieval   │  │ • Circuit      │
+│   Validation   │  │   Quality     │  │   Breaker      │
+│ • Duplicate    │  │ • Response    │  │ • Retry Logic  │
+│   Detection    │  │   Quality     │  │ • Health Check │
+│ • Metadata     │  │ • Performance │  │ • Profiling    │
+│   Verification │  │   Monitoring  │  │ • Self-Healing │
+└────────────────┘  └───────────────┘  └────────────────┘
+                            ▲
+                            │
+                    ┌───────▼────────┐
+                    │  Auto-Updater  │
+                    ├────────────────┤
+                    │ • File Watch   │
+                    │ • Incremental  │
+                    │   Updates      │
+                    │ • Versioning   │
+                    │ • Scheduling   │
+                    └────────────────┘
+```
+
+### Data Flow
+
+1. **Document Ingestion**:
+   - Documents are loaded and split into chunks
+   - Embeddings are generated for each chunk
+   - Chunks are stored in the vector database
+
+2. **Query Processing**:
+   - Query is embedded
+   - Similar documents are retrieved
+   - Context is passed to LLM
+   - Response is generated with sources
+
+3. **Quality Assurance**:
+   - Retrieval quality is checked
+   - Response quality is validated
+   - Performance is monitored
+   - Issues are logged
+
+4. **Auto-Update**:
+   - File system is monitored
+   - Changes are detected
+   - Documents are incrementally updated
+   - Versions are maintained
+
+## Testing
+
+Run all tests:
+```bash
+python main.py --mode test
+```
+
+Run specific test file:
+```bash
+pytest tests/test_integrity_checker.py -v
+```
+
+Run with coverage:
+```bash
+pytest --cov=src tests/
+```
+
+## Monitoring and Observability
+
+### Logging
+
+Logs are stored in `./logs/`:
+- `rag_system.log`: All system logs
+- `errors.log`: Error-only logs
+
+Logs are structured JSON for easy parsing and analysis.
+
+### Metrics
+
+Prometheus metrics are exposed on port 9090 (configurable):
+- Query latency
+- Error rates
+- Memory usage
+- Document counts
+- Quality check results
 
 ### Health Checks
-- Frontend: `http://localhost:3000/health`
-- Backend API: `http://localhost:4000/health`
-- Orchestrator: `http://localhost:5000/health`
 
-### Metrics & Dashboards
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3001`
+Health endpoint provides:
+- System status (healthy/degraded/critical)
+- CPU usage
+- Memory usage
+- Disk usage
+- Recent error count
 
-### Logs
-```bash
-# View application logs
-docker-compose logs -f
+## Performance
 
-# View specific service
-docker-compose logs -f backend
-```
+### Benchmarks
 
-## 🧪 Testing
+Typical performance on standard hardware:
+- Query latency: 500-2000ms
+- Embedding generation: 100-500ms per document
+- Retrieval time: 50-200ms
+- Memory usage: 500-2000MB
 
-```bash
-# Run all tests
-npm run test
+### Optimization Tips
 
-# Run E2E tests
-npm run test:e2e
+1. **Batch Processing**: Enable batch updates for large document sets
+2. **Caching**: Enable embedding cache for frequently accessed documents
+3. **Chunk Size**: Adjust chunk size based on document types
+4. **Index Optimization**: Run regular reindexing during off-peak hours
+5. **Resource Limits**: Configure memory and CPU limits appropriately
 
-# Run Solana program tests
-npm run solana:test
+## Troubleshooting
 
-# Coverage report
-npm run test:coverage
-```
+### Common Issues
 
-## 📖 API Documentation
+**High Memory Usage**
+- Reduce batch size
+- Enable cache cleanup
+- Run periodic reindexing
 
-### Backend Endpoints
+**Slow Query Times**
+- Reduce `top_k` in retrieval
+- Optimize chunk size
+- Check embedding cache
 
-#### Rewards
-- `GET /api/v1/rewards/stats` - Get global rewards statistics
-- `GET /api/v1/rewards/user/:wallet` - Get user rewards
-- `POST /api/v1/rewards/claim` - Claim pending rewards
+**Quality Check Failures**
+- Review similarity thresholds
+- Adjust coherence requirements
+- Check source documents
 
-#### Staking
-- `GET /api/v1/staking/pools` - List staking pools
-- `POST /api/v1/staking/stake` - Stake tokens
-- `POST /api/v1/staking/unstake` - Initiate unstaking
-- `GET /api/v1/staking/positions/:wallet` - Get user positions
+**Auto-Update Not Working**
+- Verify watch directories exist
+- Check file permissions
+- Review logs for errors
 
-#### Tasks
-- `GET /api/v1/tasks` - List tasks
-- `POST /api/v1/tasks` - Create task
-- `GET /api/v1/tasks/:id` - Get task details
-- `PATCH /api/v1/tasks/:id` - Update task status
+## Contributing
 
-## 🔧 Configuration
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new features
+4. Ensure all tests pass
+5. Submit a pull request
 
-### Environment Variables
+## License
 
-```env
-# Solana
-SOLANA_NETWORK=devnet
-SOLANA_RPC_URL=https://api.devnet.solana.com
-REWARDS_PROGRAM_ID=
-STAKING_PROGRAM_ID=
-GOVERNANCE_PROGRAM_ID=
+[Add your license here]
 
-# Backend
-NODE_ENV=development
-PORT=4000
-DATABASE_URL=postgresql://user:pass@localhost:5432/factrade
-REDIS_URL=redis://localhost:6379
+## Support
 
-# Frontend
-VITE_API_URL=http://localhost:4000
-VITE_SOLANA_NETWORK=devnet
+For issues and questions:
+- Create an issue on GitHub
+- Check the documentation
+- Review logs for error details
 
-# Orchestrator
-ORCHESTRATOR_PORT=5000
-RETRY_MAX_ATTEMPTS=3
-ESCALATION_THRESHOLD=5
-```
+## Roadmap
 
-## 🏗 Project Structure
-
-```
-factrade-fgda/
-├── solana-program/          # Rust Solana programs
-│   ├── programs/
-│   │   ├── rewards/         # Rewards protocol
-│   │   ├── staking/         # Staking vault
-│   │   └── governance/      # Governance
-│   └── tests/
-├── frontend/                # React TypeScript dApp
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   └── utils/
-│   └── public/
-├── backend/                 # Node.js Express API
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── models/
-│   │   └── middleware/
-│   └── tests/
-├── task-orchestrator/       # Workflow engine
-│   ├── src/
-│   │   ├── phases/
-│   │   ├── retry/
-│   │   └── escalation/
-│   └── tests/
-├── infrastructure/          # DevOps
-│   ├── docker/
-│   ├── k8s/
-│   └── monitoring/
-└── tests/                   # E2E tests
-```
-
-## 🔒 Security
-
-- All smart contracts undergo security audits before mainnet
-- Multi-signature wallet for program upgrades
-- Rate limiting and DDoS protection on APIs
-- Environment variable encryption
-- Regular dependency updates
-
-## 📈 Lifecycle Phases
-
-### 1. Seeding Phase
-- Initial user onboarding
-- Basic reward distribution
-- Community building
-
-### 2. Growth Phase
-- Reward acceleration
-- Referral mechanisms
-- Partnership integration
-
-### 3. Scaling Phase
-- Cross-chain bridges
-- Advanced features
-- Institutional adoption
-
-### 4. Maturity Phase
-- Full governance decentralization
-- Protocol sustainability
-- Long-term value accrual
-
-## 🤝 Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## 🆘 Support
-
-- Documentation: [docs.factrade.io](https://docs.factrade.io)
-- Discord: [discord.gg/factrade](https://discord.gg/factrade)
-- Email: support@factrade.io
-
-## 🎯 Roadmap
-
-- [x] Core protocol development
-- [x] Frontend dApp
-- [x] Backend API infrastructure
-- [x] Task orchestration system
-- [ ] Security audit
-- [ ] Testnet launch
-- [ ] Mainnet deployment
-- [ ] Governance activation
-
----
-
-**Built with ❤️ by the FACTRADE team**
+- [ ] Support for additional embedding providers
+- [ ] Advanced hallucination detection with NLI models
+- [ ] Multi-modal document support (images, tables)
+- [ ] Distributed vector store support
+- [ ] Real-time collaboration features
+- [ ] Advanced analytics dashboard
+- [ ] Plugin system for custom processors

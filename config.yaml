@@ -1,0 +1,163 @@
+# RAG System Configuration
+system:
+  name: "FACTRADE RAG System"
+  version: "1.0.0"
+  environment: "development"
+
+# Vector Database Configuration
+vector_store:
+  type: "chromadb"  # Options: chromadb, faiss, hnswlib
+  persist_directory: "./data/vector_store"
+  collection_name: "factrade_knowledge"
+  distance_metric: "cosine"
+
+# Embedding Configuration
+embeddings:
+  provider: "openai"  # Options: openai, huggingface, sentence-transformers
+  model: "text-embedding-3-small"
+  dimension: 1536
+  batch_size: 100
+  cache_enabled: true
+  cache_directory: "./data/embeddings"
+
+# LLM Configuration
+llm:
+  provider: "openai"
+  model: "gpt-4-turbo-preview"
+  temperature: 0.7
+  max_tokens: 2000
+  top_p: 1.0
+  frequency_penalty: 0.0
+  presence_penalty: 0.0
+
+# Document Processing
+document_processing:
+  chunk_size: 1000
+  chunk_overlap: 200
+  separators: ["\n\n", "\n", ". ", " ", ""]
+  supported_formats: ["pdf", "docx", "txt", "md", "html"]
+  max_file_size_mb: 50
+
+# Retrieval Configuration
+retrieval:
+  top_k: 5
+  similarity_threshold: 0.7
+  reranking_enabled: true
+  hybrid_search: true
+  semantic_weight: 0.7
+  keyword_weight: 0.3
+
+# Quality Check System
+quality_checks:
+  enabled: true
+  
+  # Data Integrity
+  integrity:
+    validate_embeddings: true
+    check_duplicates: true
+    verify_metadata: true
+    check_orphaned_documents: true
+  
+  # Retrieval Quality
+  retrieval:
+    test_queries_enabled: true
+    min_similarity_score: 0.6
+    max_retrieval_time_ms: 500
+    relevance_threshold: 0.7
+  
+  # Response Quality
+  response:
+    check_hallucination: true
+    verify_sources: true
+    check_coherence: true
+    min_response_length: 50
+    max_response_length: 4000
+    toxicity_check: true
+  
+  # Performance Benchmarks
+  performance:
+    max_query_time_ms: 2000
+    max_embedding_time_ms: 1000
+    max_memory_usage_mb: 2048
+    target_uptime_percent: 99.9
+
+# Auto Debugger Configuration
+auto_debugger:
+  enabled: true
+  
+  # Error Handling
+  error_handling:
+    auto_recovery: true
+    max_retry_attempts: 3
+    retry_backoff_factor: 2
+    circuit_breaker_threshold: 5
+    circuit_breaker_timeout_seconds: 60
+  
+  # Monitoring
+  monitoring:
+    health_check_interval_seconds: 60
+    performance_profiling: true
+    memory_leak_detection: true
+    track_query_patterns: true
+  
+  # Logging
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_directory: "./logs"
+    max_log_size_mb: 100
+    backup_count: 10
+    structured_logging: true
+  
+  # Self-Healing
+  self_healing:
+    enabled: true
+    auto_restart_on_failure: true
+    cleanup_orphaned_processes: true
+    auto_optimize_indices: true
+    cache_invalidation: true
+
+# Auto-Update Configuration
+auto_update:
+  enabled: true
+  
+  # Source Monitoring
+  monitoring:
+    watch_directories: ["./data/documents"]
+    watch_interval_seconds: 300
+    detect_modifications: true
+    detect_deletions: true
+  
+  # Update Strategy
+  strategy:
+    incremental_updates: true
+    batch_updates: true
+    batch_size: 50
+    update_schedule: "0 2 * * *"  # Cron format: 2 AM daily
+  
+  # Versioning
+  versioning:
+    enabled: true
+    max_versions: 10
+    version_directory: "./data/versions"
+
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  cors_enabled: true
+  rate_limit_per_minute: 60
+  authentication_required: false
+
+# Cache Configuration
+cache:
+  enabled: true
+  type: "redis"  # Options: redis, memory
+  ttl_seconds: 3600
+  max_size_mb: 512
+
+# Metrics & Observability
+metrics:
+  enabled: true
+  port: 9090
+  export_prometheus: true
+  export_interval_seconds: 15

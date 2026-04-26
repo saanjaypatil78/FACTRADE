@@ -1,0 +1,172 @@
+//@version=5
+strategy("FACTRADE Hybrid Regime (3m)", overlay=true, initial_capital=2000000, commission_type=strategy.commission.percent, commission_value=0.02, pyramiding=0, calc_on_every_tick=false, process_orders_on_close=true)
+
+// =====================
+// Inputs (from your guide)
+// =====================
+timeframeGuard = input.string("3", "Expected Timeframe")
+trendDistancePts = input.float(45.0, "Trend Distance from HMA220 (points)", minval=1)
+rangeDistancePts = input.float(30.0, "Range Distance from HMA220 (points)", minval=1)
+emaSpreadTrendPts = input.float(15.0, "EMA Spread Trend (points)", minval=1)
+emaSpreadRangePts = input.float(10.0, "EMA Spread Range (points)", minval=1)
+persistenceBars = input.int(2, "Regime Persistence Bars", minval=1, maxval=5)
+
+slBuyingPct = input.float(25.0, "Buying SL %", minval=1, maxval=80)
+slSellingPct = input.float(45.0, "Selling SL %", minval=1, maxval=80)
+tradesPerDay = input.int(3, "Max Trades/Day", minval=1, maxval=10)
+maxDailyLossINR = input.float(50000, "Max Daily Loss (₹)", minval=1)
+capitalPerTradePct = input.float(45, "Capital per Trade %", minval=1, maxval=100)
+
+// =====================
+// Indicators
+// =====================
+ema30 = ta.ema(close, 30)
+ema95 = ta.ema(close, 95)
+hma220 = ta.hma(close, 220)
+hma410 = ta.hma(close, 410)
+
+[st10Line, st10Dir] = ta.supertrend(3.0, 10)
+[st20Line, st20Dir] = ta.supertrend(6.0, 20)
+
+st10Bull = st10Dir < 0
+st20Bull = st20Dir < 0
+st10Bear = st10Dir > 0
+st20Bear = st20Dir > 0
+
+// =====================
+// Regime engine (with early-entry edge + confirmed mode)
+// =====================
+hmaSlope = hma220 - hma220[1]
+distanceFromHMA = math.abs(close - hma220)
+emaSpread = math.abs(ema30 - ema95)
+
+trendCoreBull = close > hma220 and ema30 > ema95 and st20Bull and distanceFromHMA > trendDistancePts and emaSpread > emaSpreadTrendPts and hmaSlope > 0
+trendCoreBear = close < hma220 and ema30 < ema95 and st20Bear and distanceFromHMA > trendDistancePts and emaSpread > emaSpreadTrendPts and hmaSlope < 0
+rangeCore = distanceFromHMA < rangeDistancePts and emaSpread < emaSpreadRangePts and math.abs(hmaSlope) < syminfo.mintick * 6
+
+trendConfirmBull = ta.barssince(not trendCoreBull) >= (persistenceBars - 1)
+trendConfirmBear = ta.barssince(not trendCoreBear) >= (persistenceBars - 1)
+rangeConfirm = ta.barssince(not rangeCore) >= (persistenceBars - 1)
+
+// Early mode = BEFORE persistence confirms (your stated edge)
+earlyBull = trendCoreBull and not trendConfirmBull
+earlyBear = trendCoreBear and not trendConfirmBear
+
+regimeTrendBull = trendConfirmBull or earlyBull
+regimeTrendBear = trendConfirmBear or earlyBear
+regimeRange = rangeConfirm
+regimeNoTrade = not regimeTrendBull and not regimeTrendBear and not regimeRange
+
+// =====================
+// 2-candle breakout logic
+// =====================
+bullSignalCandle = close > open and close > close[1]
+bearSignalCandle = close < open and close < close[1]
+
+bullBreakout = ta.crossover(close, high[1])
+bearBreakout = ta.crossunder(close, low[1])
+
+twoCandleBull = bullSignalCandle and bullSignalCandle[1] and bullBreakout
+twoCandleBear = bearSignalCandle and bearSignalCandle[1] and bearBreakout
+
+// =====================
+// 3/6 indicator gate
+// =====================
+bullCount = 0
+bullCount += ema30 > ema95 ? 1 : 0
+bullCount += close > hma220 ? 1 : 0
+bullCount += st10Bull ? 1 : 0
+bullCount += st20Bull ? 1 : 0
+bullCount += close > ema30 ? 1 : 0
+bullCount += close > close[1] ? 1 : 0
+
+bearCount = 0
+bearCount += ema30 < ema95 ? 1 : 0
+bearCount += close < hma220 ? 1 : 0
+bearCount += st10Bear ? 1 : 0
+bearCount += st20Bear ? 1 : 0
+bearCount += close < ema30 ? 1 : 0
+bearCount += close < close[1] ? 1 : 0
+
+indicatorGateBull = bullCount >= 3
+indicatorGateBear = bearCount >= 3
+
+// =====================
+// Range rejection proxy
+// =====================
+body = math.abs(close - open)
+upperWick = high - math.max(open, close)
+lowerWick = math.min(open, close) - low
+smallBody = body <= (ta.atr(14) * 0.35)
+
+nearUpperRange = close > hma220 and distanceFromHMA < rangeDistancePts
+nearLowerRange = close < hma220 and distanceFromHMA < rangeDistancePts
+rejectUpper = upperWick > body * 1.2 and smallBody
+rejectLower = lowerWick > body * 1.2 and smallBody
+
+// =====================
+// Execution controls
+// =====================
+strategy.risk.max_intraday_filled_orders(tradesPerDay)
+strategy.risk.max_intraday_loss(maxDailyLossINR, strategy.cash)
+
+qty = capitalPerTradePct
+is3m = timeframe.period == timeframeGuard
+barClosed = barstate.isconfirmed
+
+// Trend -> option buying proxy (directional)
+longEntry = is3m and barClosed and regimeTrendBull and twoCandleBull and indicatorGateBull and not regimeNoTrade
+shortEntry = is3m and barClosed and regimeTrendBear and twoCandleBear and indicatorGateBear and not regimeNoTrade
+
+// Range -> option selling proxy
+rangeSellCE = is3m and barClosed and regimeRange and nearUpperRange and rejectUpper and indicatorGateBear
+rangeSellPE = is3m and barClosed and regimeRange and nearLowerRange and rejectLower and indicatorGateBull
+
+if longEntry
+    strategy.entry("TREND_BUY", strategy.long, qty_percent=qty)
+
+if shortEntry
+    strategy.entry("TREND_SELL", strategy.short, qty_percent=qty)
+
+if rangeSellCE
+    strategy.entry("RANGE_SELL_CE", strategy.short, qty_percent=qty)
+
+if rangeSellPE
+    strategy.entry("RANGE_SELL_PE", strategy.long, qty_percent=qty)
+
+// =====================
+// Exit: Supertrend(20,6) trail + SL
+// =====================
+buyingStop = strategy.position_avg_price * (1 - slBuyingPct / 100)
+sellingStop = strategy.position_avg_price * (1 + slSellingPct / 100)
+
+trendFlipLong = ta.crossunder(close, st20Line)
+trendFlipShort = ta.crossover(close, st20Line)
+
+if strategy.position_size > 0
+    strategy.exit("L_EXIT", stop=buyingStop)
+    if trendFlipLong
+        strategy.close_all(comment="ST20 flip exit")
+
+if strategy.position_size < 0
+    strategy.exit("S_EXIT", stop=sellingStop)
+    if trendFlipShort
+        strategy.close_all(comment="ST20 flip exit")
+
+// =====================
+// Plots
+// =====================
+plot(ema30, "EMA 30", color=color.new(color.teal, 0))
+plot(ema95, "EMA 95", color=color.new(color.orange, 0))
+plot(hma220, "HMA 220", color=color.new(color.yellow, 0), linewidth=2)
+plot(hma410, "HMA 410 (optional)", color=color.new(color.gray, 50))
+plot(st10Line, "ST 10/3", color=st10Bull ? color.new(color.green, 35) : color.new(color.red, 35))
+plot(st20Line, "ST 20/6", color=st20Bull ? color.green : color.red, linewidth=2)
+
+bgcolor(regimeTrendBull ? color.new(color.green, 88) : regimeTrendBear ? color.new(color.red, 88) : regimeRange ? color.new(color.yellow, 88) : na)
+plotshape(earlyBull, title="Early Bull", style=shape.triangleup, location=location.belowbar, color=color.new(color.green, 0), size=size.tiny, text="E")
+plotshape(earlyBear, title="Early Bear", style=shape.triangledown, location=location.abovebar, color=color.new(color.red, 0), size=size.tiny, text="E")
+
+alertcondition(longEntry, title="Trend Buy", message="Trend mode bullish breakout + 3/6 gate")
+alertcondition(shortEntry, title="Trend Sell", message="Trend mode bearish breakout + 3/6 gate")
+alertcondition(rangeSellCE or rangeSellPE, title="Range Sell", message="Range rejection + 3/6 gate")

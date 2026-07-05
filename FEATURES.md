@@ -1,4 +1,99 @@
-# FACTRADE RAG System - Complete Feature List
+# FACTRADE - Complete Feature List
+
+## Responsibility-Probability Audit
+
+This repository currently mixes several product areas. The table below rechecks the repository by **current responsibility probability** and by **implementation status**.
+
+### Status legend
+
+- **implemented** — backed by current code and representative tests/docs
+- **partial** — code exists, but it is incomplete, mock-backed, lightly validated, or not fully wired
+- **claimed** — described in docs/structure, but not strongly supported by implementation
+- **missing** — expected by docs/architecture but not present in code
+- **defer** — outside the repo's current practical responsibility
+
+### Probability tiers
+
+- **Build / maintain now**: 85%+
+- **Strengthen next**: 65–84%
+- **Prototype only**: 40–64%
+- **Defer**: below 40%
+
+### Repository responsibility matrix
+
+| Product area | Probability | Status | Evidence |
+|---|---:|---|---|
+| RAG platform | 95% | implemented | `src/rag_system.py`, `src/integrity_checker.py`, `src/quality_checker.py`, `src/auto_debugger.py`, `src/auto_updater.py`, `tests/test_integrity_checker.py`, `tests/test_quality_checker.py`, `tests/test_auto_debugger.py` |
+| Trading research / paper trading | 90% | implemented | `src/trading/data/`, `src/trading/analysis/`, `src/trading/execution/`, `src/trading/backtest/`, `tests/test_trading_*.py`, `TRADING_SYSTEM.md` |
+| Shared observability / configuration | 80% | implemented | `src/logger.py`, `src/config_manager.py`, `config.yaml`, `pytest.ini` |
+| Frontend dApp | 70% | partial | `frontend/src/App.tsx`, `frontend/src/pages/*.tsx`, `frontend/src/services/api.ts` |
+| Task orchestrator | 65% | partial | `task-orchestrator/src/phases/PhaseManager.ts`, `task-orchestrator/src/retry/RetryEngine.ts`, `task-orchestrator/src/core/TaskQueue.ts` |
+| Solana programs | 60% | partial | `solana-program/programs/rewards/src/lib.rs`, `solana-program/programs/staking/src/lib.rs`, `solana-program/programs/governance/src/lib.rs` |
+| Backend API / integration layer | 55% | partial | `backend/src/routes/*.ts`, `backend/src/middleware/*.ts`, with mock-backed routes such as `backend/src/routes/rewards.ts` and `backend/src/routes/tasks.ts` |
+| Docker / monitoring / CI declarations | 55% | partial | `.github/workflows/ci.yml`, `docker-compose.yml`, `infrastructure/monitoring/prometheus.yml` |
+| Institutional live-trading infrastructure | 35% | defer | requires production broker connectivity, market-data SLAs, and operational controls not evidenced in the repo |
+| Encyclopedia / publishing system | 15% | defer | no dedicated encyclopedia-generation or publishing pipeline is implemented |
+
+### Feature-by-feature recheck
+
+| Responsibility | Feature | Probability | Status | Basis |
+|---|---|---:|---|---|
+| RAG | Document ingestion and chunking | 95% | implemented | Present in `src/rag_system.py`; documented throughout README and architecture docs |
+| RAG | Vector storage and retrieval | 95% | implemented | ChromaDB-based storage and retrieval paths are documented and represented in source |
+| RAG | Query answering with citations | 95% | implemented | Core RAG orchestration and source-aware response flow are first-class responsibilities |
+| RAG | Integrity checking | 95% | implemented | Dedicated checker and tests exist |
+| RAG | Quality checking | 95% | implemented | Dedicated checker and tests exist |
+| RAG | Auto-debugging / health monitoring | 90% | implemented | `src/auto_debugger.py` plus health/performance endpoints |
+| RAG | Auto-updating / reindexing | 90% | implemented | `src/auto_updater.py` and reindex support are present |
+| RAG | Configuration management | 90% | implemented | `src/config_manager.py`, `config.yaml` |
+| Trading | Historical data storage | 95% | implemented | `src/trading/data/store.py`, tested via `tests/test_trading_data_store.py` |
+| Trading | Free/public data fetching | 90% | implemented | `src/trading/data/fetcher.py` and trading docs |
+| Trading | 3H / 4H resampling | 95% | implemented | `src/trading/data/resampler.py`, tested by `tests/test_trading_resampler.py` |
+| Trading | HTF liquidity detection | 90% | implemented | `src/trading/analysis/liquidity_detector.py`, tested by `tests/test_trading_liquidity_detector.py` |
+| Trading | LTF signal generation | 85% | implemented | `src/trading/analysis/signal_generator.py` |
+| Trading | ATR-based risk management | 90% | implemented | `src/trading/execution/risk_manager.py` |
+| Trading | Exit management | 90% | implemented | `src/trading/execution/exit_manager.py`, tested by `tests/test_trading_exit_manager.py` |
+| Trading | Backtesting | 85% | implemented | `src/trading/backtest/backtester.py` |
+| Trading | Live/paper monitoring | 85% | implemented | `src/trading/monitor.py`, defaulting to paper-safe flows |
+| Shared | Logging and observability | 80% | implemented | structlog-based logging plus monitoring endpoints/docs |
+| Shared | Test coverage for critical engines | 75% | partial | strong Python coverage for RAG/trading, but no equivalent coverage for all JS/Solana areas |
+| Shared | Local-first persistence/caching | 80% | implemented | trading store, vector persistence, and cache-oriented docs/code paths exist |
+| Shared | Safety-first execution defaults | 80% | implemented | paper/signal default modes and execution gating in trading modules |
+| Shared | Modular adapters for external providers | 75% | implemented | pluggable broker/feed adapter structure exists in trading code |
+| Shared | Reproducible live/backtest behavior | 75% | implemented | shared exit/risk flows and deterministic trading tests |
+| Near-term | Broker integration beyond mock/file/webhook adapters | 65% | partial | adapter abstraction exists, but production broker integrations are not evidenced |
+| Near-term | Real-time dashboard expansion | 60% | partial | frontend pages/components exist, but integration depth varies |
+| Near-term | Trade analytics and journal reporting | 60% | partial | analytics UI/backend routes exist, but are not deeply wired to persistent trading results |
+| Near-term | Scheduled retraining / ML-assisted scoring | 50% | claimed | conceptually aligned with repo direction, but not established as a concrete subsystem |
+| Near-term | Production deployment hardening | 55% | partial | compose/CI/monitoring files exist, but end-to-end operational hardening is incomplete |
+| Near-term | Alerting and notification workflows | 50% | claimed | referenced conceptually; not established as a core, verified implementation path |
+| Near-term | Incremental data refresh orchestration | 65% | partial | present in RAG/trading patterns, but not unified across all product areas |
+| Near-term | Multi-service container orchestration | 60% | partial | `docker-compose.yml` defines services, but some integrations remain mock or declarative |
+| Lower-probability | Institutional-grade TimescaleDB architecture | 35% | defer | current repo uses different persistence paths and does not implement this architecture |
+| Lower-probability | Continuous AI retraining pipelines | 30% | defer | no mature training pipeline or ML ops layer is implemented |
+| Lower-probability | Advanced SMC auto-labeling across all ICT concepts | 35% | defer | trading system covers selected concepts, not a full institutional labeling platform |
+| Lower-probability | Portfolio-level multi-asset allocation | 25% | defer | current trading scope is concentrated and tactical, not portfolio-management oriented |
+| Lower-probability | Fully autonomous live execution with broker compliance | 30% | defer | live-safe defaults exist, but regulated/autonomous execution is not current repo scope |
+| Lower-probability | Enterprise HA / failover infrastructure | 25% | defer | infra declarations exist, but not a fully realized HA platform |
+| Very low-probability | 300–500 page encyclopedia system in-repo | 15% | defer | no publishing engine or encyclopedia content pipeline exists |
+| Very low-probability | Proprietary institutional market-data stack | 10% | defer | repo relies on free/public or adapter-based data paths |
+| Very low-probability | Tick-level execution stack | 10% | defer | not represented in current data/execution architecture |
+| Very low-probability | Large-scale MLOps platform | 10% | defer | not present in source layout or verified workflows |
+| Very low-probability | Commercial publishing workflow | 10% | defer | not an implemented software responsibility here |
+
+### Practical classification
+
+- **Primary responsibility:** RAG system + trading research / paper-trading framework
+- **Secondary responsibility:** monitoring, validation, adapters, and configuration
+- **Emerging responsibility:** frontend UX, analytics surfaces, orchestrator workflows, and broader integration
+- **Not-yet-primary responsibility:** full institutional live trading, end-to-end on-chain product operation, and publishing/encyclopedia workflows
+
+### Recheck rule for future feature claims
+
+1. If there is working code for the feature now, treat it as **implemented** and high probability.
+2. If the repo contains a clear module/path but the feature is only partially wired, treat it as **partial**.
+3. If the feature appears mostly in roadmap or marketing language, treat it as **claimed** unless code proves otherwise.
+4. If the feature requires new business scope, production operations, or a separate platform, classify it as **defer**.
 
 ## Core RAG Features
 

@@ -1,0 +1,49 @@
+# ============================================================
+# FACTRADE — Multi-Timeframe Liquidity Monitor Configuration
+# ============================================================
+# Edit this file to configure symbols, risk parameters, and
+# strategy settings.  Then start with:
+#
+#   python run_trading.py
+#
+# See TRADING.md for full documentation of every parameter.
+# ============================================================
+
+# ── Mode ────────────────────────────────────────────────────
+paper_mode: true          # true = simulate, false = live execution
+poll_interval_seconds: 60 # how often to run one evaluation cycle
+
+# ── Symbols ─────────────────────────────────────────────────
+symbols:
+  - symbol: XAUUSD
+    htf_timeframes: ["1D", "4H", "3H", "1H"]
+    ltf_timeframes: ["30m", "15m"]
+    pip_value: 1.0        # USD per pip per 0.01 lot (Gold CFD)
+    max_sl_pips: 50.0     # skip trade if SL wider than this
+
+  - symbol: WTIUSD
+    htf_timeframes: ["1D", "4H", "3H", "1H"]
+    ltf_timeframes: ["30m", "15m"]
+    pip_value: 1.0        # USD per $1 move per 0.01 lot (Crude CFD)
+    max_sl_pips: 30.0
+
+# ── Risk Management ─────────────────────────────────────────
+risk:
+  equity: 700.0           # session capital (USD) — never risk full $1,400
+  risk_pct: 1.0           # default risk per trade (% of equity)
+  max_risk_pct: 2.0       # hard cap for A+ setups only
+  max_daily_loss_pct: 2.0 # halt new trades if daily loss exceeds this %
+  max_concurrent_trades: 2
+  min_rr_ratio: 1.5       # skip trades with RR below this
+
+# ── Liquidity Detection ─────────────────────────────────────
+swing_lookback: 3         # candles each side required for a swing pivot
+equal_tolerance_pct: 0.05 # two highs/lows are "equal" within this %
+
+# ── Entry (OTE Zone) ────────────────────────────────────────
+ote_low: 0.618            # Fibonacci OTE zone lower bound
+ote_high: 0.786           # Fibonacci OTE zone upper bound
+
+# ── Stop-Loss ───────────────────────────────────────────────
+max_sl_pips: 50.0         # global default; per-symbol setting overrides this
+# Note: actual SL = HTF swept level ± (1.5 × ATR) — computed automatically

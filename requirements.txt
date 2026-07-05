@@ -58,3 +58,7 @@ cryptography>=41.0.7
 
 # Rate limiting
 ratelimit>=2.2.1
+
+# Trading system dependencies
+yfinance>=0.2.36             # Free OHLCV data (XAUUSD, USOIL proxies)
+pyarrow>=14.0.0              # Parquet storage for universal data store

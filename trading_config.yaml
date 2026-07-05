@@ -29,7 +29,7 @@ symbols:
 
 # ── Risk Management ─────────────────────────────────────────
 risk:
-  equity: 700.0           # session capital (USD) — never risk full $1,400
+  equity: 700.0           # session capital (USD) — use half of your $1,400 reserve per session
   risk_pct: 1.0           # default risk per trade (% of equity)
   max_risk_pct: 2.0       # hard cap for A+ setups only
   max_daily_loss_pct: 2.0 # halt new trades if daily loss exceeds this %

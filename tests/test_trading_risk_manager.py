@@ -120,7 +120,7 @@ def test_approves_good_rr(rm):
 # ---------------------------------------------------------------------------
 
 def test_rejects_after_daily_loss_cap(rm):
-    # Simulate a 3 % loss on $1000 equity → should exceed 2 % cap
+    # Simulate a 3% loss on $1000 equity → should exceed 2% cap
     rm._daily_stats.realized_pnl = -30.0  # -3 %
     params = rm.evaluate("XAUUSD", 3200.0, 3190.0, 3220.0, 3240.0, 2.0)
     assert not params.approved
@@ -128,7 +128,7 @@ def test_rejects_after_daily_loss_cap(rm):
 
 
 def test_allows_trade_within_daily_loss(rm):
-    rm._daily_stats.realized_pnl = -5.0  # -0.5 % — within 2 % cap
+    rm._daily_stats.realized_pnl = -5.0  # -0.5% — within 2% cap
     params = rm.evaluate("XAUUSD", 3200.0, 3190.0, 3220.0, 3240.0, 2.0)
     assert params.approved
 

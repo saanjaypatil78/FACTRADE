@@ -99,7 +99,7 @@ def test_detect_swing_highs_and_lows(detector):
     assert len(swing_highs) >= 1
     # The injected spike should be the maximum swing high
     max_sh = max(swing_highs, key=lambda x: x.price)
-    assert max_sh.price >= 1090.0  # close to injected spike value
+    assert max_sh.price >= 1098.0  # within 2 points of the injected spike (1100.0)
 
 
 def test_detect_swing_lows(detector):

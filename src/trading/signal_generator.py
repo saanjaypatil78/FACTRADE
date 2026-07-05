@@ -222,12 +222,9 @@ class SignalGenerator:
         if last_close > last_upper or last_close < last_lower:
             return MarketRegime.VOLATILE
 
-        # Trend: SMMA ribbon clearly separated and price on correct side
+        # Trend: SMMA ribbon clearly separated (direction-agnostic for signal filtering)
         ribbon_gap = abs(last_fast - last_slow)
-        price_range_20 = df["high"].rolling(20).max().iloc[-1] - df["low"].rolling(20).min().iloc[-1]
         if ribbon_gap > 0.001 * last_close and bb_width > 0.005:
-            if last_fast > last_slow:
-                return MarketRegime.TREND
             return MarketRegime.TREND
 
         # Range: flat BB bands

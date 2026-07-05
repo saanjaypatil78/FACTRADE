@@ -35,7 +35,7 @@ from src.trading.analysis.liquidity_detector import LiquidityDetector
 from src.trading.analysis.signal_generator import SignalGenerator
 from src.trading.data.store import DataStore
 from src.trading.execution.exit_manager import ExitConfig, ExitManager
-from src.trading.execution.risk_manager import RiskManager
+from src.trading.execution.risk_manager import RiskManager, _PIP_VALUE_PER_LOT
 
 logger = structlog.get_logger(__name__)
 
@@ -184,7 +184,7 @@ class Backtester:
                     bt_rec.pnl_pips = rec["trade"].pnl
                     bt_rec.exit_reason = rec["trade"].close_reason.name if rec["trade"].close_reason else ""
                     trades.append(bt_rec)
-                    pip_val = 10.0  # per lot per pip
+                    pip_val = _PIP_VALUE_PER_LOT.get(cfg.symbol.upper(), 10.0)
                     equity += bt_rec.pnl_pips * bt_rec.lots * pip_val
                     equity_curve.append((ts, equity))
                 else:

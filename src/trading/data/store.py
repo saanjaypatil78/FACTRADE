@@ -263,7 +263,9 @@ class DataStore:
         start: Optional[str] = None
         if not existing.empty:
             last = existing.index.max()
-            start = last.strftime("%Y-%m-%d")
+            # Use full ISO timestamp so intraday incremental fetches (1H, 15m …)
+            # don't miss candles within the same day as the last stored bar.
+            start = last.isoformat()
             logger.info(
                 "data_store.refresh_incremental",
                 symbol=symbol,

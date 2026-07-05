@@ -203,6 +203,23 @@ class RiskManager:
 
         # Position sizing: risk_amount = lots × sl_pips × pip_val_per_lot
         # pip_val_per_lot is for 1 standard lot (1.0)
+        if sl_pips < 0.01:
+            # SL is effectively at entry — trade is structurally invalid
+            return PositionSpec(
+                symbol=symbol,
+                direction=direction,
+                entry_price=entry_price,
+                sl_price=sl,
+                tp1_price=tp1_price,
+                tp2_price=tp2_price,
+                lot_size=0.0,
+                sl_pips=sl_pips,
+                risk_amount=risk_amount,
+                risk_pct=risk_pct,
+                atr=atr,
+                valid=False,
+                skip_reason="SL pips too small (< 0.01) — entry and SL are at the same price",
+            )
         raw_lots = risk_amount / (sl_pips * pip_val)
         lot_size = max(self.min_lot, min(self.max_lot, round(raw_lots, 2)))
 

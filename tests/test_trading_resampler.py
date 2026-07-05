@@ -55,7 +55,9 @@ class TestResample3H:
     """Validate exact 3H resampling."""
 
     def setup_method(self) -> None:
-        # 72 × 1H bars = exactly 24 complete 3H bars (drop 1 incomplete → 23)
+        # 73 × 1H bars starting at 00:00: bars 0–71 fill 24 complete 3H periods,
+        # bar 72 (at 72:00) starts the 25th period (incomplete → dropped).
+        # After drop_incomplete=True: exactly 24 complete 3H bars remain.
         self.df_1h = _make_1h_df(start="2024-01-01 00:00", periods=73)
 
     def test_3h_bar_count(self) -> None:

@@ -180,6 +180,9 @@ class ExitManager:
         ts = bar.name
 
         # ── Time stop ───────────────────────────────────────────────────
+        # bars_held is incremented at the top of this method, so when
+        # bars_held == max_hold_bars the *current* bar is the Nth bar held
+        # (e.g. max_hold_bars=3 exits on the 3rd processed bar, inclusive).
         if cfg.max_hold_bars > 0 and trade.bars_held >= cfg.max_hold_bars:
             return self._close_trade(trade, close, ts, ExitReason.TIME_STOP)
 

@@ -58,3 +58,6 @@ cryptography>=41.0.7
 
 # Rate limiting
 ratelimit>=2.2.1
+
+# Trading data (free, no paid credits required)
+yfinance>=0.2.40

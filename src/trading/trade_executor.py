@@ -18,6 +18,8 @@ from typing import Dict, List, Optional
 
 import structlog
 
+from src.trading.risk_manager import _PIP_VALUE, _PIP_SIZE, _DEFAULT_PIP_VALUE, _DEFAULT_PIP_SIZE
+
 from src.trading.candle import Signal, TradeResult
 
 logger = structlog.get_logger(__name__)
@@ -102,7 +104,9 @@ class TradeExecutor:
 
         ts = exit_time or datetime.now(tz=timezone.utc)
         pnl_pips = self._pips(signal, exit_price)
-        pnl_usd = pnl_pips * 0.01  # 0.01-lot baseline
+        # P&L in USD at 0.01-lot baseline using the instrument's pip value
+        pip_val = _PIP_VALUE.get(signal.symbol.upper(), _DEFAULT_PIP_VALUE)
+        pnl_usd = pnl_pips * pip_val
 
         result = TradeResult(
             signal=signal,
@@ -196,7 +200,6 @@ class TradeExecutor:
 
     @staticmethod
     def _pips(signal: Signal, exit_price: float) -> float:
-        from src.trading.risk_manager import _PIP_SIZE, _DEFAULT_PIP_SIZE
         pip_size = _PIP_SIZE.get(signal.symbol.upper(), _DEFAULT_PIP_SIZE)
         if signal.direction == "long":
             return (exit_price - signal.entry_price) / pip_size

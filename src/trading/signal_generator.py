@@ -49,6 +49,13 @@ _SMMA_SLOW = 59
 # VWAP reset frequency (daily)
 _VWAP_RESET = "1D"
 
+# SMMA ribbon – minimum % separation between fast and slow lines to confirm trend
+_SMMA_MIN_SEP_PCT = 0.001   # 0.1 %
+
+# Bollinger Bands flatness check – look-back bars and max allowed midline range
+_BB_FLAT_LOOKBACK = 20
+_BB_FLAT_MAX_RANGE_PCT = 0.003   # 0.3 %
+
 
 class SignalGenerator:
     """
@@ -184,9 +191,9 @@ class SignalGenerator:
         slow = smma_slow[-1]
         diff = fast - slow
 
-        # Trend must be clear (at least 0.1 % separation)
+        # Trend must be clear (minimum % ribbon separation)
         sep_pct = abs(diff) / slow
-        if sep_pct < 0.001:
+        if sep_pct < _SMMA_MIN_SEP_PCT:
             return None
 
         direction = "long" if diff > 0 else "short"
@@ -266,9 +273,9 @@ class SignalGenerator:
         closes = np.array([c.close for c in candles])
         mid, upper, lower = _bollinger(closes, _BB_PERIOD, _BB_STD)
 
-        # Bands must be flat (range of the last 20 midline values < 0.3 %)
-        mid_range = (mid[-20:].max() - mid[-20:].min()) / mid[-1]
-        if mid_range > 0.003:
+        # Bands must be flat (range of the recent midline values < threshold)
+        mid_range = (mid[-_BB_FLAT_LOOKBACK:].max() - mid[-_BB_FLAT_LOOKBACK:].min()) / mid[-1]
+        if mid_range > _BB_FLAT_MAX_RANGE_PCT:
             return None
 
         latest = candles[-1]

@@ -61,15 +61,17 @@ _SYMBOL_MAP: Dict[str, str] = {
     "WTICOUSD": "CL=F",
 }
 
-# yfinance interval strings for each FACTRADE timeframe
+# yfinance interval strings for each FACTRADE timeframe.
+# Timeframes marked with a comment are approximations — yfinance does not
+# support that exact interval, so the nearest available one is used.
 _TF_MAP: Dict[str, str] = {
     "1m": "1m",
-    "3m": "2m",   # yfinance has no 3m; 2m is closest
+    "3m": "2m",    # ⚠ approximation: yfinance has no 3m; 2m is the nearest
     "5m": "5m",
     "15m": "15m",
     "30m": "30m",
     "1H": "1h",
-    "3H": "90m",  # yfinance has no 3H; 90m is closest
+    "3H": "90m",   # ⚠ approximation: yfinance has no 3H; 90m is the nearest
     "4H": "1h",   # yfinance has no 4H; use 1H and resample
     "1D": "1d",
     "1W": "1wk",
@@ -141,6 +143,20 @@ class YFinanceAdapter(BaseAdapter):
         else:
             yf_interval = _TF_MAP.get(timeframe, timeframe)
             resample_rule = None
+
+        # Warn when the requested timeframe is approximated by a different interval
+        _APPROX_TF = {"3m", "3H"}
+        if timeframe in _APPROX_TF:
+            logger.warning(
+                "yfinance_adapter.approx_timeframe",
+                requested=timeframe,
+                using=yf_interval,
+                note=(
+                    f"yfinance does not support {timeframe!r}; "
+                    f"using {yf_interval!r} as the closest available interval. "
+                    "Use a broker CSV for exact timeframe fidelity."
+                ),
+            )
 
         max_days = _MAX_DAYS.get(yf_interval, 730)
 

@@ -23,10 +23,12 @@ from src.trading.candle import Candle
 logger = structlog.get_logger(__name__)
 
 # Instrument-specific pip values (USD per pip per 0.01 lot)
-# For reporting purposes; live sizing must use broker contract specs.
+# Formula: contract_size × pip_size × lot_size
+#   XAUUSD: 100 oz × $0.01/pip × 0.01 lot = $0.01/pip per 0.01 lot
+#   USOIL:  1000 bbl × $0.01/pip × 0.01 lot = $0.10/pip per 0.01 lot
 _PIP_VALUE: dict = {
-    "XAUUSD": 0.01,   # 1 pip = $0.01 in XAUUSD for 0.01 lot (100 oz × $0.01 × 0.01 lot)
-    "USOIL":  0.10,   # 1 pip = $0.10 for 0.01 lot crude (1000 bbl × $0.01 × 0.01)
+    "XAUUSD": 0.01,   # $0.01 per pip per 0.01 lot
+    "USOIL":  0.10,   # $0.10 per pip per 0.01 lot
     "WTI":    0.10,
     "GC=F":   0.01,
     "CL=F":   0.10,

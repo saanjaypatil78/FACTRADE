@@ -80,6 +80,43 @@ df = store.refresh("XAUUSD", "3H", fetcher)
 print(store.list_entries())
 ```
 
+**Fallback manager (store → yfinance → optional file import):**
+
+```python
+from src.trading.data.source_manager import DataSourceManager, ImportFileSpec
+
+manager = DataSourceManager(
+    store=store,
+    file_sources={
+        ("XAUUSD", "15m"): ImportFileSpec(path="data/imports/xauusd_15m.parquet"),
+        ("WTIUSD", "15m"): ImportFileSpec(path="data/imports/wtiusd_15m.csv", source="broker_csv"),
+    },
+)
+
+result = manager.get("XAUUSD", "15m", start="2024-01-01", end="2024-06-01")
+if result.df.empty:
+    print("No data available:", result.detail)
+else:
+    print("Loaded via", result.source, "rows:", len(result.df))
+```
+
+`DataSourceManager` checks Yahoo DNS/HTTPS before trying `yfinance`; if offline, it skips Yahoo and continues to optional imported files.
+
+**GitHub Actions proxy/egress example:**
+
+```yaml
+env:
+  HTTP_PROXY: ${{ secrets.HTTP_PROXY }}
+  HTTPS_PROXY: ${{ secrets.HTTPS_PROXY }}
+  NO_PROXY: ${{ secrets.NO_PROXY }}
+```
+
+Allow DNS + HTTPS egress to:
+- `finance.yahoo.com`
+- `query1.finance.yahoo.com`
+- `query2.finance.yahoo.com`
+- `guce.yahoo.com`
+
 **Provenance:** when data is resampled from a finer source, `resample_from` is recorded in the catalogue (e.g. `"1H"` for 3H data built from 1H bars).
 
 ---
@@ -260,6 +297,28 @@ bt = Backtester(store=store, config=config)
 results = bt.run(start="2023-01-01", end="2024-01-01")
 print(results["summary"])
 ```
+
+**Long-run input contract (10-year style windows):**
+
+```python
+from src.trading.backtest.input_contract import ensure_long_run_inputs
+
+inputs = ensure_long_run_inputs(
+    store=store,
+    source_manager=manager,
+    start="2016-01-01",
+    end="2026-01-01",
+    symbols=["XAUUSD", "WTIUSD"],
+    timeframes=["4H", "15m"],
+)
+if not inputs["ok"]:
+    raise RuntimeError(f"Missing candles for long-run backtest: {inputs['items']}")
+```
+
+For long-run intraday backtests, the recommended workflow is:
+1. preload local candle files (CSV/Parquet) into the fallback manager,
+2. run `ensure_long_run_inputs(...)` to auto-populate store gaps,
+3. run `Backtester.run(...)` using locally cached data.
 
 Results:
 ```python

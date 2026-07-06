@@ -100,9 +100,86 @@ jobs:
         working-directory: ./task-orchestrator
         run: npm test
 
+  test-trading-data-feed:
+    name: Test Trading Data Feed Access
+    runs-on: ubuntu-latest
+    env:
+      HTTP_PROXY: ${{ secrets.HTTP_PROXY }}
+      HTTPS_PROXY: ${{ secrets.HTTPS_PROXY }}
+      NO_PROXY: ${{ secrets.NO_PROXY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install trading dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pandas pyarrow structlog yfinance
+
+      - name: Check Yahoo DNS and egress
+        run: |
+          python - <<'PY'
+          import socket
+          import urllib.request
+
+          hosts = [
+              "finance.yahoo.com",
+              "query1.finance.yahoo.com",
+              "query2.finance.yahoo.com",
+              "guce.yahoo.com",
+          ]
+
+          for host in hosts:
+              try:
+                  socket.gethostbyname(host)
+              except OSError as exc:
+                  raise SystemExit(
+                      f"❌ Yahoo DNS/egress blocked for {host}: {exc}. "
+                      "Configure runner proxy/allowlist (HTTP_PROXY/HTTPS_PROXY/NO_PROXY)."
+                  )
+
+          url = "https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=5d"
+          req = urllib.request.Request(url, method="GET")
+          try:
+              with urllib.request.urlopen(req, timeout=10) as resp:
+                  if int(resp.status) >= 400:
+                      raise SystemExit(
+                          f"❌ Yahoo endpoint returned HTTP {resp.status}. "
+                          "Check proxy allowlist and outbound HTTPS."
+                      )
+          except Exception as exc:
+              raise SystemExit(
+                  f"❌ Yahoo HTTPS egress blocked: {exc}. "
+                  "Configure runner proxy/allowlist (HTTP_PROXY/HTTPS_PROXY/NO_PROXY)."
+              )
+          print("✅ Yahoo DNS and HTTPS checks passed.")
+          PY
+
+      - name: Smoke test yfinance fetch
+        run: |
+          python - <<'PY'
+          import yfinance as yf
+
+          df = yf.download(
+              "GC=F",
+              period="5d",
+              interval="1h",
+              progress=False,
+              auto_adjust=True,
+              multi_level_index=False,
+          )
+          if df is None or df.empty:
+              raise SystemExit("❌ yfinance returned empty data for GC=F.")
+          print(f"✅ yfinance rows: {len(df)}")
+          PY
+
   deploy-devnet:
     name: Deploy to Devnet
-    needs: [test-solana, test-backend, test-frontend, test-orchestrator]
+    needs: [test-solana, test-backend, test-frontend, test-orchestrator, test-trading-data-feed]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop'
     steps:

@@ -85,7 +85,7 @@ class DataSourceManager:
         try:
             with urlopen(req, timeout=timeout) as resp:
                 if int(resp.status) >= 400:
-                    return False, f"http_status:{resp.status}"
+                    return False, f"http_status:{resp.status}@{self.probe_url}"
         except URLError as exc:
             return False, f"http_failed:{exc}"
         except TimeoutError:

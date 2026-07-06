@@ -1,3 +1,7 @@
+# FACTRADE
+
+> **Current repository scope:** this repository contains multiple workstreams. The most mature and best-aligned areas today are the **RAG platform** and the **trading research / paper-trading framework**. The **Solana/dApp**, **Node backend**, **task orchestrator**, and parts of the **deployment stack** are present, but some of those areas are still partial, mock-backed, or primarily scaffolded. See `/home/runner/work/FACTRADE/FACTRADE/FEATURES.md` for the responsibility-probability audit.
+
 # FACTRADE RAG System
 
 A production-ready, auto-updating Retrieval-Augmented Generation (RAG) system with built-in quality checks, auto-debugging capabilities, and integrity validation.
